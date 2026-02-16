@@ -11,7 +11,7 @@ name: Spring Boot Hello World OpenShift CI/CD
 
 env:
   # Java build configuration
-  JAVA_BUILDER_IMAGE: "nexus.local.omghax.pro:13378/images/java25-builder:latest"
+  JAVA_BUILDER_IMAGE: "maven:4.0.0-rc-5-eclipse-temurin-25"
   MAVEN_SETTINGS_FILE: "./settings.xml"
   MAVEN_BUILD_COMMAND: "mvn -s ./settings.xml -Dmaven.repo.local=.m2/repository clean package -DskipTests -Dcheckstyle.skip=true"
 
@@ -26,7 +26,7 @@ jobs:
     name: Build Java Application
     runs-on: okdlab-arc-runners
     container:
-      image: nexus.local.omghax.pro:13378/images/java25-builder:latest
+      image: maven:4.0.0-rc-5-eclipse-temurin-25
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
