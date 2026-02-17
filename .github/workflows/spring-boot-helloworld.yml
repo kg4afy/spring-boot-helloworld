@@ -31,6 +31,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Import internal CA certificates
+        run: |
+          curl -sk https://vault.local.omghax.pro/v1/pki/ca/pem -o /tmp/root-ca.pem
+          curl -sk https://vault.local.omghax.pro/v1/pki_int/ca/pem -o /tmp/intermediate-ca.pem
+          keytool -importcert -noprompt -trustcacerts -alias radiohax-root-ca \
+            -file /tmp/root-ca.pem -keystore "$JAVA_HOME/lib/security/cacerts" -storepass changeit
+          keytool -importcert -noprompt -trustcacerts -alias radiohax-intermediate-ca \
+            -file /tmp/intermediate-ca.pem -keystore "$JAVA_HOME/lib/security/cacerts" -storepass changeit
+
       - name: Build with Maven
         run: |
           echo "Building Java application"
