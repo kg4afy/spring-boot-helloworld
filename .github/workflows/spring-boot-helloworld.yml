@@ -24,7 +24,7 @@ jobs:
   # Stage 1: Build Java application using the builder image
   java-build:
     name: Build Java Application
-    runs-on: okdlab-arc-runners
+    runs-on: okdlab-arc-runners-spring-boot-helloworld
     container:
       image: maven:4.0.0-rc-5-eclipse-temurin-25
     steps:
