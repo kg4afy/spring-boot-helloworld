@@ -1,0 +1,55 @@
+# Spring Boot Hello World OpenShift CI/CD Pipeline for GitHub Actions
+#
+# This workflow will:
+# - Build the Java application using Maven with the internal Nexus mirror
+#
+# Prerequisites:
+# 1. ARC runners deployed on the i2a OpenShift cluster
+# 2. Runners must have network access to nexus.local.omghax.pro
+
+name: build-i2a
+
+env:
+  # Java build configuration
+  JAVA_BUILDER_IMAGE: "maven:4.0.0-rc-5-eclipse-temurin-25"
+  MAVEN_SETTINGS_FILE: "./settings.xml"
+  MAVEN_BUILD_COMMAND: "mvn -s ./settings.xml -Dmaven.repo.local=.m2/repository clean package -DskipTests -Dcheckstyle.skip=true"
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # Stage 1: Build Java application using the builder image
+  java-build:
+    name: Build Java Application
+    runs-on: i2a-arc-runners-spring-boot-helloworld
+    container:
+      image: maven:4.0.0-rc-5-eclipse-temurin-25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Import internal CA certificates
+        run: |
+          cp "$JAVA_HOME/lib/security/cacerts" /tmp/cacerts
+          curl -sk https://vault.local.omghax.pro/v1/pki/ca/pem -o /tmp/root-ca.pem
+          curl -sk https://vault.local.omghax.pro/v1/pki_int/ca/pem -o /tmp/intermediate-ca.pem
+          keytool -importcert -noprompt -trustcacerts -alias radiohax-root-ca \
+            -file /tmp/root-ca.pem -keystore /tmp/cacerts -storepass changeit
+          keytool -importcert -noprompt -trustcacerts -alias radiohax-intermediate-ca \
+            -file /tmp/intermediate-ca.pem -keystore /tmp/cacerts -storepass changeit
+
+      - name: Build with Maven
+        run: |
+          echo "Building Java application"
+          echo "Using Maven settings from ${MAVEN_SETTINGS_FILE}"
+          ${MAVEN_BUILD_COMMAND} -Djavax.net.ssl.trustStore=/tmp/cacerts
+          echo "Build completed successfully"
+          ls -lh target/*.jar
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: java-build-artifact
+          path: target/*.jar
+          retention-days: 1

@@ -1,13 +1,13 @@
 # Spring Boot Hello World OpenShift CI/CD Pipeline for GitHub Actions
 #
-# This workflow mirrors the petclinic pipeline and will:
+# This workflow will:
 # - Build the Java application using Maven with the internal Nexus mirror
 #
 # Prerequisites:
 # 1. ARC runners deployed on the okdlab OpenShift cluster (github-arc-runners namespace)
 # 2. Runners must have network access to nexus.local.omghax.pro
 
-name: Spring Boot Hello World OpenShift CI/CD
+name: build-okdlab
 
 env:
   # Java build configuration
@@ -17,8 +17,6 @@ env:
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ "main" ]
 
 jobs:
   # Stage 1: Build Java application using the builder image
